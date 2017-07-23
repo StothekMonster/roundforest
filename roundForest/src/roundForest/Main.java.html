@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>Main.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Main (1) (23.07.2017 08:42:03)</a> &gt; <a href="../../index.html" class="el_group">roundForest</a> &gt; <a href="../index.html" class="el_bundle">src</a> &gt; <a href="index.source.html" class="el_package">roundForest</a> &gt; <span class="el_source">Main.java</span></div><h1>Main.java</h1><pre class="source lang-java linenums">package roundForest;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
+
+<span class="nc" id="L11">public class Main {</span>
+
+	public static void main(String[] args) {
+		//Place the path to the input data file in the RUN CONFIGURATIONS 1ST ARGUMENT.
+		//split on 2nd argument, comma, or semicolon etc.
+<span class="fc" id="L16">		CSVReader csv = new CSVReader(args[0],&quot;,&quot;);</span>
+<span class="fc" id="L17">		ArrayList&lt;String&gt; profileName = csv.getProfileName();</span>
+<span class="fc" id="L18">		ArrayList&lt;String&gt; productIDs  = csv.getProductIds();</span>
+<span class="fc" id="L19">		ArrayList&lt;String&gt; reviewWords = csv.getAllReviewWords(); </span>
+<span class="fc" id="L20">		System.out.println(&quot;Most Active User\n&quot;);</span>
+<span class="fc" id="L21">		FindNMostFrequentOccurences(profileName,1000);</span>
+<span class="fc" id="L22">		System.out.println(&quot;Most Reviewed Product ID \n&quot;);</span>
+<span class="fc" id="L23">		FindNMostFrequentOccurences(productIDs, 1000);</span>
+<span class="fc" id="L24">		System.out.println(&quot;Most Common words in Product Reviews\n&quot;);</span>
+<span class="fc" id="L25">		FindNMostFrequentOccurences(reviewWords, 1000);</span>
+<span class="fc" id="L26">	}</span>
+	// TASK 1-3 require the most frequent occurences of different pieces of our data
+	private static void FindNMostFrequentOccurences(ArrayList&lt;String&gt; profileName,int n) {
+<span class="fc" id="L29">		HashMap&lt;String, Integer&gt; hmap = new HashMap&lt;String, Integer&gt;();</span>
+		//iterate through our data 
+<span class="fc bfc" id="L31" title="All 2 branches covered.">		for(int i = 0; i&lt; profileName.size(); i++){</span>
+			//Here we count how many occurences and place inside hashmap for O(1) extraction
+<span class="fc" id="L33">			String current_id = profileName.get(i).toString();</span>
+			// this means that it's not found in our array yet, so put it in and set it's count to 1
+<span class="fc bfc" id="L35" title="All 2 branches covered.">			if(hmap.get(current_id) == null){</span>
+<span class="fc" id="L36">				hmap.put(current_id, 1);</span>
+<span class="fc" id="L37">			} else {</span>
+				//Otherwise increase the count
+<span class="fc" id="L39">				int current_count = hmap.get(current_id);</span>
+<span class="fc" id="L40">				current_count += 1;</span>
+<span class="fc" id="L41">				hmap.put(current_id, current_count);</span>
+			}
+		}
+		//multimaps can be used to sort by value of the key value pair which will be useful when finding the top 1000.
+		// Because a multimap can have many values to one key, so we reverse the hash and make it count1-&gt;(stringA,StringB)
+<span class="fc" id="L46">		ListMultimap&lt;Integer, String&gt; multimap = ArrayListMultimap.create();</span>
+<span class="fc" id="L47">		hmap.entrySet().forEach(entry -&gt; {</span>
+<span class="fc" id="L48">			multimap.put(entry.getValue(), entry.getKey());</span>
+<span class="fc" id="L49">		}); </span>
+		//We want to store the values in alphabetical order, only up to 1000 entries as specified in requirements.
+<span class="fc" id="L51">		String[] alphabetical_results = new String[n];</span>
+		
+<span class="fc bfc" id="L53" title="All 2 branches covered.">		for (int i = 0; i &lt; n; i++){</span>
+			//in case we have data less than 1000 entries
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">			if (!multimap.isEmpty()){</span>
+				//get last because the hash goes from 1-&gt;n and we want highest count
+<span class="fc" id="L57">				int lastKey = Iterables.getLast(multimap.keys());				</span>
+<span class="fc" id="L58">				String lastValue = Iterables.getLast(multimap.values());</span>
+				//Remove one of the values, meaning there would still be other values for that key
+				//makes sure we don't just remove one value per key
+<span class="fc" id="L61">				multimap.remove(lastKey, lastValue);</span>
+				//set our array to the value we found
+<span class="fc" id="L63">				alphabetical_results[i] = lastValue;</span>
+<span class="fc" id="L64">				System.out.println(i+1+&quot;: &quot;+lastValue+&quot;, Occurences: &quot;+lastKey);</span>
+			}
+		}
+		
+<span class="fc" id="L68">		System.out.println(&quot;In alphabetical order&quot;);</span>
+		//Dual-Pivot Quicksort by Vladimir Yaroslavskiy, Jon Bentley, and Joshua Bloch. This algorithm offers O(n log(n))
+<span class="fc" id="L70">		Arrays.sort(alphabetical_results);</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">		for(int i = 0; i &lt; alphabetical_results.length; i++){</span>
+<span class="fc" id="L72">			System.out.println(alphabetical_results[i]);</span>
+		}
+<span class="fc" id="L74">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span>Main (1) (23.07.2017 08:42:03)</div></body></html>
